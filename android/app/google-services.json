@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "322340765461",
+    "project_id": "project1-cfb53",
+    "storage_bucket": "project1-cfb53.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:322340765461:android:a2fdb1582fb9d88505331c",
+        "android_client_info": {
+          "package_name": "com.example.campustalk"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCyg3kG_-sM797PyIse9hJC1S-dyulCuGQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
