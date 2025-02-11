@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'edit_blog_screen.dart';
 import 'add_blog_screen.dart'; // Import the AddBlogScreen
 import 'blog_detail_screen.dart'; // Import BlogDetailScreen
+import 'package:cached_network_image/cached_network_image.dart'; // Import CachedNetworkImage
 
 class BlogListScreen extends StatelessWidget {
   final User? currentUser = FirebaseAuth.instance.currentUser;
@@ -54,11 +55,15 @@ class BlogListScreen extends StatelessWidget {
                     contentPadding: const EdgeInsets.all(10),
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        blog["imageUrl"],
+                      child: CachedNetworkImage(
+                        imageUrl: blog["imageUrl"],
                         width: 60,
                         height: 60,
                         fit: BoxFit.cover,
+                        placeholder: (context, url) =>
+                            const CircularProgressIndicator(),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.error),
                       ),
                     ),
                     title: Text(

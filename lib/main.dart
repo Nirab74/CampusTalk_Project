@@ -94,23 +94,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      // Check if the user is logged in and navigate accordingly
-      home: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            // Display splash screen or loading indicator while waiting for auth state
-            return const SplashScreen();
-          }
-          if (snapshot.hasData) {
-            // User is logged in, navigate to HomePage
-            return const HomePage();
-          } else {
-            // User is not logged in, navigate to LoginPage
-            return const LoginPage();
-          }
-        },
-      ),
+      home: const SplashScreen(),
     );
   }
 }

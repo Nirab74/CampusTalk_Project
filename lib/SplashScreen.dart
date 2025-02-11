@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'login_page.dart'; // Import the LoginPage here
+import 'package:firebase_auth/firebase_auth.dart';
+import 'home.dart';
+import 'login_page.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -10,25 +12,25 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  // Function to navigate to LoginPage after the splash screen
   @override
   void initState() {
     super.initState();
-    _navigateToLogin();
+    _navigateToNextScreen();
   }
 
-  // Delay function for splash screen
-  _navigateToLogin() async {
-    await Future.delayed(const Duration(
-        seconds: 3)); // Adjust the splash screen duration as needed
+  _navigateToNextScreen() async {
+    await Future.delayed(const Duration(seconds: 3)); // Splash screen delay
 
-    // Using WidgetsBinding to ensure context is valid before navigating
     if (mounted) {
+      User? user = FirebaseAuth.instance.currentUser;
+
+      // Navigate based on user authentication status
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (context) =>
-                const LoginPage()), // Navigate to LoginPage instead of HomePage
+          builder: (context) =>
+              user != null ? const HomePage() : const LoginPage(),
+        ),
       );
     }
   }
@@ -41,22 +43,18 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Add your logo here
-            Image.asset('images/CT.png',
-                width: 150, height: 150), // Update the logo path as needed
+            Image.asset('images/CT.png', width: 150, height: 150), // Logo
             const SizedBox(height: 20),
             const Text(
               "CampusTalk",
               style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
             ),
             const SizedBox(height: 10),
             const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-            ),
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
           ],
         ),
       ),

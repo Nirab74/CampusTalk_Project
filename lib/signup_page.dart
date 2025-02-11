@@ -37,7 +37,7 @@ class _SignupPageState extends State<SignupPage> {
 
   // Password validation regex pattern (At least 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char)
   final RegExp _passwordRegex = RegExp(
-      r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@\$!%*?&])[A-Za-z\d@\$!%*?&]{8,}$');
+      r'^(?=.[A-Z])(?=.[a-z])(?=.\d)(?=.[@\$!%?&])[A-Za-z\d@\$!%?&]{8,}$');
 
   // Function to handle sign-up logic
   Future<void> _signup() async {

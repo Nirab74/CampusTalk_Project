@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart'; // Import CachedNetworkImage
 
 class BlogDetailScreen extends StatefulWidget {
   final String blogId;
@@ -65,7 +66,7 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
     }
   }
 
-  Future<void> _addComment(String parentId) async {
+  Future<void> _addComment() async {
     if (commentController.text.trim().isEmpty) return;
 
     String profileUrl =
@@ -84,7 +85,6 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
       "userProfile": profileUrl,
       "text": commentController.text.trim(),
       "timestamp": FieldValue.serverTimestamp(),
-      "parentId": parentId
     });
 
     commentController.clear();
@@ -94,7 +94,9 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: Text("Blog Details"), backgroundColor: Colors.blueAccent),
+        title: Text("Blog Details"),
+        backgroundColor: Colors.blueAccent,
+      ),
       body: Column(
         children: [
           Expanded(
@@ -116,12 +118,17 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Image.network(
-                          blogData["imageUrl"] ??
-                              "https://example.com/default-image.jpg",
-                          width: double.infinity,
-                          height: 200,
-                          fit: BoxFit.cover),
+                      CachedNetworkImage(
+                        imageUrl: blogData["imageUrl"] ??
+                            "https://example.com/default-image.jpg",
+                        width: double.infinity,
+                        height: 200,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) =>
+                            const CircularProgressIndicator(),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.error),
+                      ),
                       SizedBox(height: 10),
                       Text(blogData["title"] ?? "No Title",
                           style: TextStyle(
@@ -134,10 +141,9 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
                         children: [
                           IconButton(
                             icon: Icon(
-                                isLiked
-                                    ? Icons.favorite
-                                    : Icons.favorite_border,
-                                color: isLiked ? Colors.red : Colors.grey),
+                              isLiked ? Icons.favorite : Icons.favorite_border,
+                              color: isLiked ? Colors.red : Colors.grey,
+                            ),
                             onPressed: _toggleLike,
                           ),
                           Text("$likeCount Likes"),
@@ -188,24 +194,13 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
               elevation: 3,
               child: ListTile(
                 leading: CircleAvatar(
-                    backgroundImage: NetworkImage(commentData["userProfile"] ??
-                        "https://example.com/default-profile.png")),
+                  backgroundImage: CachedNetworkImageProvider(
+                      commentData["userProfile"] ??
+                          "https://example.com/default-profile.png"),
+                ),
                 title: Text(commentData["username"] ?? "Anonymous",
                     style: TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(commentData["text"]),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () => _addComment(comment.id),
-                        child:
-                            Text("Reply", style: TextStyle(color: Colors.blue)),
-                      ),
-                    )
-                  ],
-                ),
+                subtitle: Text(commentData["text"] ?? ""),
               ),
             );
           },
@@ -223,15 +218,17 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
             child: TextField(
               controller: commentController,
               decoration: InputDecoration(
-                  hintText: "Write a comment...",
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16)),
+                hintText: "Write a comment...",
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 16),
+              ),
             ),
           ),
           SizedBox(width: 8),
           IconButton(
-              icon: Icon(Icons.send, color: Colors.blue),
-              onPressed: () => _addComment("")),
+            icon: Icon(Icons.send, color: Colors.blue),
+            onPressed: _addComment,
+          ),
         ],
       ),
     );

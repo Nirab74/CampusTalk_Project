@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'AskQuestionScreen.dart';
-import 'QuestionDetailScreen.dart'; // Import the Question Detail Screen
+import 'QuestionDetailScreen.dart';
 
 class QuestionListScreen extends StatefulWidget {
   @override
@@ -39,17 +39,6 @@ class _QuestionListScreenState extends State<QuestionListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Questions"),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.search),
-            onPressed: () {
-              showSearch(
-                context: context,
-                delegate: QuestionSearchDelegate(),
-              );
-            },
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -81,117 +70,122 @@ class _QuestionListScreenState extends State<QuestionListScreen> {
                   return Center(child: CircularProgressIndicator());
                 }
 
-                var questions = snapshot.data!.docs.where((doc) {
-                  final category = doc["category"] ?? "";
-                  final title = doc["title"]?.toLowerCase() ?? "";
-                  return (selectedCategory == "All" ||
-                          category == selectedCategory) &&
-                      (searchQuery.isEmpty ||
-                          title.contains(searchQuery.toLowerCase()));
-                }).toList();
+                var questions = snapshot.data!.docs;
 
                 return ListView.builder(
                   itemCount: questions.length,
                   itemBuilder: (context, index) {
                     final doc = questions[index];
                     final data = doc.data() as Map<String, dynamic>;
-
                     final String questionId = doc.id;
                     final String title = data["title"] ?? "No Title";
                     final String description =
                         data["description"] ?? "No Description";
-                    final String userName = data["userName"] ?? "Anonymous";
-                    final String profileImage = data["profileImage"] ?? "";
+                    final String userId = data["userId"] ?? "";
                     final int upvotes = data["upvotes"] ?? 0;
-                    final List<String> upvotedBy = List<String>.from(
-                        data.containsKey("upvotedBy") ? data["upvotedBy"] : []);
+                    final List<String> upvotedBy =
+                        List<String>.from(data["upvotedBy"] ?? []);
 
-                    return Card(
-                      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      elevation: 3,
-                      child: Padding(
-                        padding: EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                profileImage.isNotEmpty
-                                    ? CircleAvatar(
-                                        backgroundImage:
-                                            NetworkImage(profileImage),
-                                        radius: 20)
-                                    : CircleAvatar(
-                                        child: Icon(Icons.person), radius: 20),
-                                SizedBox(width: 10),
-                                Text(userName,
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                            SizedBox(height: 8),
-                            Text(title,
-                                style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold)),
-                            SizedBox(height: 4),
-                            Text(description,
-                                maxLines: 2, overflow: TextOverflow.ellipsis),
-                            SizedBox(height: 8),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.blue.shade100,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(data["category"] ?? "No Category"),
-                            ),
-                            SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    return FutureBuilder<DocumentSnapshot>(
+                      future: FirebaseFirestore.instance
+                          .collection("users")
+                          .doc(userId)
+                          .get(),
+                      builder: (context, userSnapshot) {
+                        if (!userSnapshot.hasData) {
+                          return SizedBox.shrink();
+                        }
+
+                        final userData =
+                            userSnapshot.data!.data() as Map<String, dynamic>?;
+                        final String userName =
+                            userData?["username"] ?? "Anonymous";
+                        final String profileImage =
+                            userData?["profileImage"] ?? "";
+
+                        return Card(
+                          margin:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          elevation: 3,
+                          child: Padding(
+                            padding: EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
                                   children: [
-                                    IconButton(
-                                      icon: Icon(
-                                        upvotedBy.contains(user!.uid)
-                                            ? Icons.thumb_up_alt
-                                            : Icons.thumb_up_alt_outlined,
-                                        color: upvotedBy.contains(user?.uid)
-                                            ? Colors.blue
-                                            : Colors.black,
-                                      ),
-                                      onPressed: () =>
-                                          toggleUpvote(questionId, upvotedBy),
-                                    ),
-                                    Text("$upvotes Upvotes"),
+                                    profileImage.isNotEmpty
+                                        ? CircleAvatar(
+                                            backgroundImage:
+                                                NetworkImage(profileImage),
+                                            radius: 20)
+                                        : CircleAvatar(
+                                            child: Icon(Icons.person),
+                                            radius: 20),
+                                    SizedBox(width: 10),
+                                    Text(userName,
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
                                   ],
                                 ),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            QuestionDetailScreen(
-                                          questionId: questionId,
+                                SizedBox(height: 8),
+                                Text(title,
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold)),
+                                SizedBox(height: 4),
+                                Text(description,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis),
+                                SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        IconButton(
+                                          icon: Icon(
+                                            upvotedBy.contains(user!.uid)
+                                                ? Icons.thumb_up_alt
+                                                : Icons.thumb_up_alt_outlined,
+                                            color: upvotedBy.contains(user?.uid)
+                                                ? Colors.blue
+                                                : Colors.black,
+                                          ),
+                                          onPressed: () => toggleUpvote(
+                                              questionId, upvotedBy),
                                         ),
+                                        Text("$upvotes Upvotes"),
+                                      ],
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                QuestionDetailScreen(
+                                              questionId: questionId,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Text("Give Answer"),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.green,
+                                        foregroundColor: Colors.white,
                                       ),
-                                    );
-                                  },
-                                  child: Text("Give Answer"),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green,
-                                    foregroundColor: Colors.white,
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                      ),
+                          ),
+                        );
+                      },
                     );
                   },
                 );
@@ -209,66 +203,5 @@ class _QuestionListScreenState extends State<QuestionListScreen> {
         child: Icon(Icons.add, color: Colors.white),
       ),
     );
-  }
-}
-
-class QuestionSearchDelegate extends SearchDelegate {
-  @override
-  List<Widget> buildActions(BuildContext context) {
-    return [
-      IconButton(
-        icon: Icon(Icons.clear),
-        onPressed: () {
-          query = "";
-        },
-      ),
-    ];
-  }
-
-  @override
-  Widget buildLeading(BuildContext context) {
-    return IconButton(
-      icon: Icon(Icons.arrow_back),
-      onPressed: () {
-        close(context, null);
-      },
-    );
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection("questions")
-          .orderBy("timestamp", descending: true)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return Center(child: CircularProgressIndicator());
-        }
-
-        var results = snapshot.data!.docs.where((doc) {
-          final title = doc["title"]?.toLowerCase() ?? "";
-          return title.contains(query.toLowerCase());
-        }).toList();
-
-        return ListView(
-          children: results.map((doc) {
-            return ListTile(
-              title: Text(doc["title"]),
-              subtitle: Text(doc["description"]),
-              onTap: () {
-                close(context, null);
-              },
-            );
-          }).toList(),
-        );
-      },
-    );
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    return Container();
   }
 }

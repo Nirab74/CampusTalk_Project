@@ -74,8 +74,33 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  void _markMessageAsSeen(DocumentReference messageRef) async {
-    await messageRef.update({'status': 'seen'});
+  void _deleteMessage(DocumentReference messageRef) async {
+    await messageRef.delete();
+  }
+
+  void _showDeleteDialog(DocumentReference messageRef) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Delete Message"),
+          content: const Text("Are you sure you want to delete this message?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                _deleteMessage(messageRef);
+                Navigator.pop(context);
+              },
+              child: const Text("Delete", style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -138,71 +163,71 @@ class _ChatScreenState extends State<ChatScreen> {
                       size: 16,
                     );
 
-                    if (!isMe && status == 'sent') {
-                      _markMessageAsSeen(message.reference);
-                    }
-
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
-                      alignment:
-                          isMe ? Alignment.centerRight : Alignment.centerLeft,
-                      child: Column(
-                        crossAxisAlignment: isMe
-                            ? CrossAxisAlignment.end
-                            : CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 15, vertical: 10),
-                            constraints: BoxConstraints(
-                                maxWidth:
-                                    MediaQuery.of(context).size.width * 0.75),
-                            decoration: BoxDecoration(
-                              color: isMe
-                                  ? Colors.green[300]
-                                  : Colors.grey[300], // ✅ Color update
-                              borderRadius: BorderRadius.only(
-                                topLeft: const Radius.circular(12),
-                                topRight: const Radius.circular(12),
-                                bottomLeft: isMe
-                                    ? const Radius.circular(12)
-                                    : Radius.zero,
-                                bottomRight: isMe
-                                    ? Radius.zero
-                                    : const Radius.circular(12),
+                    return GestureDetector(
+                      onLongPress: isMe
+                          ? () => _showDeleteDialog(message.reference)
+                          : null,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        alignment:
+                            isMe ? Alignment.centerRight : Alignment.centerLeft,
+                        child: Column(
+                          crossAxisAlignment: isMe
+                              ? CrossAxisAlignment.end
+                              : CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 15, vertical: 10),
+                              constraints: BoxConstraints(
+                                  maxWidth:
+                                      MediaQuery.of(context).size.width * 0.75),
+                              decoration: BoxDecoration(
+                                color:
+                                    isMe ? Colors.green[300] : Colors.grey[300],
+                                borderRadius: BorderRadius.only(
+                                  topLeft: const Radius.circular(12),
+                                  topRight: const Radius.circular(12),
+                                  bottomLeft: isMe
+                                      ? const Radius.circular(12)
+                                      : Radius.zero,
+                                  bottomRight: isMe
+                                      ? Radius.zero
+                                      : const Radius.circular(12),
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    message['message'],
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        color:
+                                            isMe ? Colors.black : Colors.black),
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        formattedTime,
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            color: isMe
+                                                ? Colors.black54
+                                                : Colors.black54),
+                                      ),
+                                      const SizedBox(width: 5),
+                                      if (isMe) statusIcon,
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  message['message'],
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      color:
-                                          isMe ? Colors.black : Colors.black),
-                                ),
-                                const SizedBox(height: 5),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      formattedTime,
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: isMe
-                                              ? Colors.black54
-                                              : Colors.black54),
-                                    ),
-                                    const SizedBox(width: 5),
-                                    if (isMe) statusIcon,
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -238,7 +263,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.green[500], // ✅ Soft Green Send Button
+                      color: Colors.green[500],
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.send, color: Colors.white),
@@ -249,7 +274,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ],
       ),
-      backgroundColor: Colors.grey[200], // ✅ Light Grey Chat Background
+      backgroundColor: Colors.grey[200],
     );
   }
 }

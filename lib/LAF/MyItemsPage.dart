@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'item_detail_page.dart'; // Import ItemDetailPage for item details
-import 'post_item_page.dart'; // Import PostItemPage for adding a new post
+import 'ItemDetailPage.dart';
+import 'PostItemPage.dart';
 
 class MyItemsPage extends StatelessWidget {
   final String userId;

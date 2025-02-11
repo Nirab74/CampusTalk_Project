@@ -41,7 +41,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
             child: TextField(
               onChanged: (query) {
                 setState(() {
-                  searchQuery = query;
+                  searchQuery = query.toLowerCase();
                 });
               },
               decoration: InputDecoration(
@@ -77,21 +77,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
                   return const Center(child: Text("No chats available"));
                 }
 
-                var filteredChats = chats.where((chat) {
-                  String otherUserId = chat['user1'] == currentUserId
-                      ? chat['user2']
-                      : chat['user1'];
-                  return chat['lastMessage']
-                      .toString()
-                      .toLowerCase()
-                      .contains(searchQuery.toLowerCase());
-                }).toList();
-
                 return ListView.builder(
-                  itemCount: filteredChats.length,
+                  itemCount: chats.length,
                   itemBuilder: (context, index) {
-                    var chat =
-                        filteredChats[index].data() as Map<String, dynamic>;
+                    var chat = chats[index].data() as Map<String, dynamic>;
                     String otherUserId = chat['user1'] == currentUserId
                         ? chat['user2']
                         : chat['user1'];
@@ -116,6 +105,11 @@ class _ChatListScreenState extends State<ChatListScreen> {
                         String username =
                             userData['username'] ?? "Unknown User";
                         String profileImage = userData['profileImage'] ?? "";
+
+                        if (searchQuery.isNotEmpty &&
+                            !username.toLowerCase().contains(searchQuery)) {
+                          return const SizedBox();
+                        }
 
                         return Card(
                           margin: const EdgeInsets.symmetric(

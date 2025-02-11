@@ -31,7 +31,7 @@ class _AskQuestionScreenState extends State<AskQuestionScreen> {
 
     await FirebaseFirestore.instance.collection("questions").add({
       "userId": user.uid,
-      "userName": user.displayName ?? "Anonymous",
+      "username": user.displayName ?? "Anonymous",
       "profileImage": user.photoURL ?? "", // Store user profile image
       "title": _titleController.text.trim(),
       "description": _descController.text.trim(),

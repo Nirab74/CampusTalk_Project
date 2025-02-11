@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:geocoding/geocoding.dart'; // Add this package for geolocation lookup
 
 class PostItemPage extends StatefulWidget {
   const PostItemPage({super.key});
@@ -23,13 +22,10 @@ class _PostItemPageState extends State<PostItemPage> {
   String _category = 'Electronics'; // Default category
   File? _image;
 
-  double? latitude;
-  double? longitude;
-
-  final ImagePicker _picker = ImagePicker();
-
   // ImgBB API Key (replace with your own)
   final String imgBBApiKey = IMGBB_API_KEY;
+
+  final ImagePicker _picker = ImagePicker();
 
   // Function to pick an image from the gallery
   Future<void> _pickImage() async {
@@ -64,21 +60,6 @@ class _PostItemPageState extends State<PostItemPage> {
     }
   }
 
-  // Function to get coordinates from address (location)
-  Future<void> _getCoordinatesFromAddress(String address) async {
-    try {
-      List<Location> locations = await locationFromAddress(address);
-      if (locations.isNotEmpty) {
-        setState(() {
-          latitude = locations.first.latitude;
-          longitude = locations.first.longitude;
-        });
-      }
-    } catch (e) {
-      print("Error fetching location: $e");
-    }
-  }
-
   // Function to post the lost or found item to Firestore
   Future<void> _postItem() async {
     if (_titleController.text.isEmpty ||
@@ -110,8 +91,6 @@ class _PostItemPageState extends State<PostItemPage> {
         'category': _category,
         'location': _locationController.text,
         'contact': _contactController.text, // Store the contact number
-        'latitude': latitude, // Store the latitude
-        'longitude': longitude, // Store the longitude
         'image_url': imageUrl, // Store the ImgBB image URL
         'created_at': Timestamp.now(),
       });
@@ -199,10 +178,6 @@ class _PostItemPageState extends State<PostItemPage> {
           ),
           contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
-        onChanged: (text) {
-          // Get coordinates when location field is changed
-          _getCoordinatesFromAddress(text);
-        },
       ),
     );
   }
@@ -302,11 +277,7 @@ class _PostItemPageState extends State<PostItemPage> {
         ),
         child: Text(
           'Post Item',
-          style: TextStyle(
-            fontSize: 18,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
       ),
     );

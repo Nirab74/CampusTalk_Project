@@ -44,7 +44,7 @@ class UserQuestionsScreen extends StatelessWidget {
               final String category = data["category"] ?? "No Category";
               final int upvotes = data["upvotes"] ?? 0;
               final String profileImage = data["profileImage"] ?? "";
-              final String userName = data["userName"] ?? "Anonymous";
+              final String userName = data["username"] ?? "Anonymous";
 
               return Card(
                 margin: EdgeInsets.symmetric(horizontal: 12, vertical: 8),

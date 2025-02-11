@@ -31,7 +31,7 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
         .collection("answers")
         .add({
       "userId": user!.uid,
-      "userName": user!.displayName ?? "Anonymous",
+      "username": user!.displayName ?? "Anonymous",
       "profileImage": profileImage,
       "answer": _answerController.text.trim(),
       "timestamp": FieldValue.serverTimestamp(),
@@ -130,7 +130,7 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                               style: TextStyle(
                                   fontSize: 20, fontWeight: FontWeight.bold)),
                           SizedBox(height: 8),
-                          Text("Asked by: ${question["userName"]}",
+                          Text("Asked by: ${question["username"]}",
                               style: TextStyle(color: Colors.grey[700])),
                           SizedBox(height: 10),
                           Text(question["description"],
@@ -190,7 +190,7 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                                                   radius: 20,
                                                 ),
                                                 SizedBox(width: 10),
-                                                Text(data["userName"],
+                                                Text(data["username"],
                                                     style: TextStyle(
                                                         fontWeight:
                                                             FontWeight.bold)),
