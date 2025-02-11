@@ -12,7 +12,6 @@ class QuestionListScreen extends StatefulWidget {
 class _QuestionListScreenState extends State<QuestionListScreen> {
   final User? user = FirebaseAuth.instance.currentUser;
   String selectedCategory = "All";
-  String searchQuery = "";
 
   void toggleUpvote(String questionId, List<String> upvotedBy) async {
     if (user == null) return;
@@ -37,9 +36,7 @@ class _QuestionListScreenState extends State<QuestionListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Questions"),
-      ),
+      appBar: AppBar(title: Text("Questions")),
       body: Column(
         children: [
           Padding(
@@ -70,7 +67,11 @@ class _QuestionListScreenState extends State<QuestionListScreen> {
                   return Center(child: CircularProgressIndicator());
                 }
 
-                var questions = snapshot.data!.docs;
+                var questions = snapshot.data!.docs.where((doc) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  return selectedCategory == "All" ||
+                      data["category"] == selectedCategory;
+                }).toList();
 
                 return ListView.builder(
                   itemCount: questions.length,
@@ -85,6 +86,7 @@ class _QuestionListScreenState extends State<QuestionListScreen> {
                     final int upvotes = data["upvotes"] ?? 0;
                     final List<String> upvotedBy =
                         List<String>.from(data["upvotedBy"] ?? []);
+                    final String category = data["category"] ?? "General";
 
                     return FutureBuilder<DocumentSnapshot>(
                       future: FirebaseFirestore.instance
@@ -131,6 +133,10 @@ class _QuestionListScreenState extends State<QuestionListScreen> {
                                   ],
                                 ),
                                 SizedBox(height: 8),
+                                Text("Category: $category",
+                                    style: TextStyle(
+                                        fontSize: 14, color: Colors.grey)),
+                                SizedBox(height: 4),
                                 Text(title,
                                     style: TextStyle(
                                         fontSize: 18,
@@ -168,8 +174,7 @@ class _QuestionListScreenState extends State<QuestionListScreen> {
                                           MaterialPageRoute(
                                             builder: (context) =>
                                                 QuestionDetailScreen(
-                                              questionId: questionId,
-                                            ),
+                                                    questionId: questionId),
                                           ),
                                         );
                                       },

@@ -130,7 +130,7 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                               style: TextStyle(
                                   fontSize: 20, fontWeight: FontWeight.bold)),
                           SizedBox(height: 8),
-                          Text("Asked by: ${question["username"]}",
+                          Text("Question: ${question["username"]}",
                               style: TextStyle(color: Colors.grey[700])),
                           SizedBox(height: 10),
                           Text(question["description"],

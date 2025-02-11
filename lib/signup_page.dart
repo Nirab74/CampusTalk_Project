@@ -35,48 +35,40 @@ class _SignupPageState extends State<SignupPage> {
     "Bangla"
   ];
 
-  // Password validation regex pattern (At least 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char)
+  // Improved Password Validation Regex
   final RegExp _passwordRegex = RegExp(
-      r'^(?=.[A-Z])(?=.[a-z])(?=.\d)(?=.[@\$!%?&])[A-Za-z\d@\$!%?&]{8,}$');
+      r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$');
 
-  // Function to handle sign-up logic
+  // Signup Function
   Future<void> _signup() async {
     setState(() {
       _isLoading = true;
       _errorMessage = '';
     });
 
+    // Email Validation
     if (!_emailController.text.endsWith('@lus.ac.bd')) {
-      setState(() {
-        _errorMessage = "Only @lus.ac.bd emails are allowed.";
-        _isLoading = false;
-      });
+      _showError("Only @lus.ac.bd emails are allowed.");
       return;
     }
 
+    // Password Validation
     if (!_passwordRegex.hasMatch(_passwordController.text)) {
-      setState(() {
-        _errorMessage =
-            "Password must be at least 8 characters, include an uppercase letter, lowercase letter, number, and special character.";
-        _isLoading = false;
-      });
+      _showError(
+          "Password must be at least 8 characters, include an uppercase letter, lowercase letter, number, and special character.");
       return;
     }
 
+    // Confirm Password Validation
     if (_passwordController.text.trim() !=
         _confirmPasswordController.text.trim()) {
-      setState(() {
-        _errorMessage = "Passwords do not match.";
-        _isLoading = false;
-      });
+      _showError("Passwords do not match.");
       return;
     }
 
+    // Department Selection Validation
     if (_selectedDepartment == null) {
-      setState(() {
-        _errorMessage = "Please select a department.";
-        _isLoading = false;
-      });
+      _showError("Please select a department.");
       return;
     }
 
@@ -89,32 +81,38 @@ class _SignupPageState extends State<SignupPage> {
 
       User? user = userCredential.user;
       if (user != null) {
-        // Save user data to Firestore
         await _firestore.collection('users').doc(user.uid).set({
           'uid': user.uid,
           'username': _usernameController.text.trim(),
           'email': _emailController.text.trim(),
           'department': _selectedDepartment,
-          'profileImage': '', // Empty initially
+          'profileImage': '',
         });
 
-        // Navigate to Home Page
+        // Clear Fields After Successful Signup
+        _usernameController.clear();
+        _emailController.clear();
+        _passwordController.clear();
+        _confirmPasswordController.clear();
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),
         );
       }
     } on FirebaseAuthException catch (e) {
-      setState(() {
-        _errorMessage = e.message ?? "Sign-up failed. Please try again.";
-      });
-    } on FirebaseException catch (e) {
-      setState(() {
-        _errorMessage = "Firestore Error: ${e.message}";
-      });
+      _showError(e.message ?? "Sign-up failed. Please try again.");
     }
 
     setState(() {
+      _isLoading = false;
+    });
+  }
+
+  // Function to Show Error Messages
+  void _showError(String message) {
+    setState(() {
+      _errorMessage = message;
       _isLoading = false;
     });
   }
@@ -154,7 +152,6 @@ class _SignupPageState extends State<SignupPage> {
         borderRadius: BorderRadius.circular(25),
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: const [
           Text(
             "CampusTalk",
@@ -178,13 +175,14 @@ class _SignupPageState extends State<SignupPage> {
         color: Colors.white.withOpacity(0.9),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black12, blurRadius: 10, spreadRadius: 2),
+          BoxShadow(color: Colors.black12, blurRadius: 10, spreadRadius: 2)
         ],
       ),
       child: Column(
         children: [
           _buildTextField("Username", Icons.person, _usernameController),
-          _buildTextField("Email", Icons.email, _emailController),
+          _buildTextField("Email", Icons.email, _emailController,
+              inputType: TextInputType.emailAddress),
           _buildTextField("Password", Icons.lock, _passwordController,
               isPassword: true),
           _buildTextField(
@@ -205,7 +203,7 @@ class _SignupPageState extends State<SignupPage> {
 
   Widget _buildTextField(
       String hint, IconData icon, TextEditingController controller,
-      {bool isPassword = false}) {
+      {bool isPassword = false, TextInputType? inputType}) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10),
       padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -215,6 +213,7 @@ class _SignupPageState extends State<SignupPage> {
       ),
       child: TextField(
         controller: controller,
+        keyboardType: inputType ?? TextInputType.text,
         obscureText: isPassword,
         decoration: InputDecoration(
           hintText: hint,
@@ -236,17 +235,10 @@ class _SignupPageState extends State<SignupPage> {
       ),
       hint: const Text("Select Department"),
       value: _selectedDepartment,
-      onChanged: (value) {
-        setState(() {
-          _selectedDepartment = value;
-        });
-      },
-      items: _departments.map((dept) {
-        return DropdownMenuItem(
-          value: dept,
-          child: Text(dept),
-        );
-      }).toList(),
+      onChanged: (value) => setState(() => _selectedDepartment = value),
+      items: _departments
+          .map((dept) => DropdownMenuItem(value: dept, child: Text(dept)))
+          .toList(),
     );
   }
 
@@ -257,10 +249,9 @@ class _SignupPageState extends State<SignupPage> {
       child: ElevatedButton(
         onPressed: _isLoading ? null : _signup,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.deepPurple,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-        ),
+            backgroundColor: Colors.deepPurple,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(50))),
         child: _isLoading
             ? const CircularProgressIndicator(color: Colors.white)
             : const Text("Sign Up",
@@ -275,10 +266,8 @@ class _SignupPageState extends State<SignupPage> {
       children: [
         const Text("Already have an account? ", style: TextStyle(fontSize: 16)),
         TextButton(
-          onPressed: () {
-            Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (context) => const LoginPage()));
-          },
+          onPressed: () => Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => const LoginPage())),
           child: const Text("Login",
               style: TextStyle(
                   color: Colors.lightBlue, fontWeight: FontWeight.bold)),
